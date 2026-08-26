@@ -60,3 +60,9 @@ make all          # chaîne complète
 ```
 
 Avant son utilisation, charger les environnements Vitis/Vivado et PetaLinux correspondant à l’installation locale. Le dépôt fournit uniquement les sources et scripts ; il ne contient pas un projet PetaLinux initialisé ni les outils AMD.
+
+## CI matérielle sur runner auto-hébergé
+
+Le workflow contient un job `hardware-bitstream-build` qui s’exécute uniquement sur un runner GitHub auto-hébergé portant les labels `self-hosted`, `vivado` et `zcu111`. Ce runner doit disposer de Vitis, Vitis HLS, Vivado, PetaLinux, des licences AMD nécessaires et d’un projet PetaLinux initialisé dans `petalinux/`.
+
+Le job matériel attend la réussite de `software-ci`, lance `make all`, puis publie les fichiers `.xsa`, `BOOT.BIN`, `image.ub` et `download.bit` comme artefacts GitHub Actions. Pour protéger la machine locale, il n’est pas déclenché par les pull requests : les changements doivent d’abord être fusionnés dans `main`, ou le workflow doit être lancé manuellement par un opérateur de confiance.
