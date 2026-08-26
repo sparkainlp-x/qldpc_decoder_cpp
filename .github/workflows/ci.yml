@@ -43,6 +43,20 @@ jobs:
           LDPC_MAX_LATENCY_NS: 1000
         run: ./build/ldpc_benchmark
 
+      - name: Run Monte-Carlo FER simulation
+        run: >-
+          ./build/monte_carlo_sim
+          --trials "${MONTE_CARLO_TRIALS:-10000}"
+          --csv fer_curve.csv
+
+      - name: Upload Monte-Carlo FER curve
+        uses: actions/upload-artifact@v4
+        with:
+          name: qldpc-fer-curve
+          if-no-files-found: error
+          retention-days: 30
+          path: fer_curve.csv
+
   hardware-bitstream-build:
     # Ne jamais exécuter du code d’une pull request externe sur un runner local.
     if: github.event_name != 'pull_request'

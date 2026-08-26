@@ -31,6 +31,21 @@ Le projet construit également `ldpc_benchmark`, qui mesure une multiplication m
 
 Dans GitHub Actions, le benchmark échoue si la médiane atteint ou dépasse `1000 ns` (`1 µs`). Le seuil peut être changé avec la variable d’environnement `LDPC_MAX_LATENCY_NS`. Les runners GitHub-hosted étant virtualisés et partagés, le résultat est un contrôle de régression indicatif et ne remplace pas une mesure sur machine dédiée.
 
+## Simulation Monte-Carlo FER
+
+Le binaire `monte_carlo_sim` exécute une simulation Monte-Carlo de taux d’erreur trame (FER) sur plusieurs points BER et exporte la courbe en CSV (`BER,FER,FramesAtBER,ErrorsAtBER,Timestamp`).
+
+```bash
+./build/monte_carlo_sim --trials 10000 --csv fer_curve.csv
+```
+
+Options utiles :
+- `--ber-list 0.001,0.005,0.01,0.02,0.05`
+- `--seed 42`
+- `--json fer_curve.json` (export optionnel)
+
+Dans la CI logicielle, la simulation est lancée avec `MONTE_CARLO_TRIALS` (défaut: `10000`) et publie `fer_curve.csv` comme artefact.
+
 La première configuration télécharge automatiquement le dépôt amont `quantumgizmos/ldpc` dans le répertoire de build. Le fichier `CMakeLists.txt` utilise `-O3 -march=native -ffast-math -flto` sur les compilateurs non-MSVC et `/O2 /arch:AVX2` sous MSVC.
 
 > `-march=native` produit un binaire adapté à la machine de compilation. Pour distribuer le binaire sur d’autres processeurs, remplacez ce drapeau par une architecture cible portable.

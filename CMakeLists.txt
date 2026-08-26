@@ -29,6 +29,7 @@ FetchContent_MakeAvailable(ldpc)
 option(BUILD_UNIT_TESTS "Build Catch2 unit tests" ON)
 option(BUILD_AXI_DMA_DRIVER "Build the Linux ARM AXI-DMA driver" OFF)
 option(BUILD_HIL_BENCHMARK "Build the hardware-in-the-loop benchmark" OFF)
+option(BUILD_MONTE_CARLO_SIM "Build the Monte-Carlo FER simulator" ON)
 if(BUILD_AXI_DMA_DRIVER)
     if(NOT UNIX)
         message(FATAL_ERROR "BUILD_AXI_DMA_DRIVER requires a Unix-like target")
@@ -54,12 +55,25 @@ endif()
 
 add_executable(qldpc_decoder main.cpp)
 add_executable(ldpc_benchmark benchmark.cpp)
+if(BUILD_MONTE_CARLO_SIM)
+    add_executable(monte_carlo_sim monte_carlo.cpp)
+endif()
 
 if(BUILD_UNIT_TESTS)
     add_executable(unit_tests tests/test_decoder.cpp)
     target_link_libraries(unit_tests PRIVATE Catch2::Catch2WithMain ldpc OpenMP::OpenMP_CXX)
     target_include_directories(unit_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     add_test(NAME unit_tests COMMAND unit_tests)
+    if(BUILD_MONTE_CARLO_SIM)
+        add_test(
+            NAME monte_carlo_smoke
+            COMMAND monte_carlo_sim
+                --trials 50
+                --ber-list 0.01
+                --csv ${CMAKE_BINARY_DIR}/fer_curve_test.csv
+                --progress-interval 50
+        )
+    endif()
 endif()
 
 target_link_libraries(qldpc_decoder
@@ -74,12 +88,26 @@ target_link_libraries(ldpc_benchmark
         OpenMP::OpenMP_CXX
 )
 
+if(BUILD_MONTE_CARLO_SIM)
+    target_link_libraries(monte_carlo_sim
+        PRIVATE
+            ldpc
+            OpenMP::OpenMP_CXX
+    )
+endif()
+
 target_include_directories(qldpc_decoder PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(ldpc_benchmark PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+if(BUILD_MONTE_CARLO_SIM)
+    target_include_directories(monte_carlo_sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
 
 if(NOT MSVC)
     set_property(TARGET qldpc_decoder PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
     set_property(TARGET ldpc_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    if(BUILD_MONTE_CARLO_SIM)
+        set_property(TARGET monte_carlo_sim PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
     if(BUILD_UNIT_TESTS)
         set_property(TARGET unit_tests PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
     endif()
