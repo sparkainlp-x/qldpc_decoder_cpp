@@ -1,0 +1,17 @@
+# Block Design Vivado RFSoC
+
+Le script [`create_bd.tcl`](./create_bd.tcl) génère le Block Design `system_bd` pour un AMD Zynq UltraScale+ RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`). Il ajoute le dépôt IP produit par Vitis HLS, instancie le processeur RFSoC, le convertisseur RF, les FIFOs AXI4-Stream et le noyau `qldpc_decode_kernel`.
+
+Le script suppose que le projet Vitis HLS a déjà été généré avec l’IP disponible à l’emplacement suivant :
+
+```text
+./qldpc_hls_project/solution_300mhz/impl/ip
+```
+
+Depuis un environnement AMD Vivado correctement configuré, lancer :
+
+```bash
+vivado -mode batch -source vivado/create_bd.tcl
+```
+
+Le script exécute ensuite `validate_bd_design` et sauvegarde le Block Design. La génération dépend des versions installées des IP AMD/Xilinx et ne peut pas être validée dans la CI logicielle standard, qui ne fournit pas Vivado ni les licences FPGA nécessaires.

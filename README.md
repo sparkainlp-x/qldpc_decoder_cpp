@@ -34,3 +34,14 @@ Dans GitHub Actions, le benchmark échoue si la médiane atteint ou dépasse `10
 La première configuration télécharge automatiquement le dépôt amont `quantumgizmos/ldpc` dans le répertoire de build. Le fichier `CMakeLists.txt` utilise `-O3 -march=native -ffast-math -flto` sur les compilateurs non-MSVC et `/O2 /arch:AVX2` sous MSVC.
 
 > `-march=native` produit un binaire adapté à la machine de compilation. Pour distribuer le binaire sur d’autres processeurs, remplacez ce drapeau par une architecture cible portable.
+
+## Synthèse AMD Vitis HLS
+
+Le répertoire `hls/` contient le noyau `qldpc_decode_kernel`, son testbench et le script `run_hls.tcl` ciblant le RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`) à 300 MHz. Depuis un environnement où Vitis HLS 2023.2 est installé :
+
+```bash
+source /tools/Xilinx/Vitis_HLS/2023.2/settings64.sh
+vitis_hls -f hls/run_hls.tcl
+```
+
+La synthèse FPGA n’est pas exécutée par la CI GitHub Actions standard, car le runner ne fournit ni Vitis HLS ni les bibliothèques AMD HLS. La CI vérifie en revanche les sources C++ portables, les tests Catch2 et le benchmark logiciel.
