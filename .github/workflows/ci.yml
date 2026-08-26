@@ -34,3 +34,8 @@ jobs:
 
       - name: Run smoke test
         run: ./build/qldpc_decoder
+
+      - name: Run latency benchmark
+        env:
+          LDPC_MAX_LATENCY_NS: 1000
+        run: ./build/ldpc_benchmark

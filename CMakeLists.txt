@@ -27,6 +27,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ldpc)
 
 add_executable(qldpc_decoder main.cpp)
+add_executable(ldpc_benchmark benchmark.cpp)
 
 target_link_libraries(qldpc_decoder
     PRIVATE
@@ -34,8 +35,16 @@ target_link_libraries(qldpc_decoder
         OpenMP::OpenMP_CXX
 )
 
+target_link_libraries(ldpc_benchmark
+    PRIVATE
+        ldpc
+        OpenMP::OpenMP_CXX
+)
+
 target_include_directories(qldpc_decoder PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(ldpc_benchmark PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT MSVC)
     set_property(TARGET qldpc_decoder PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set_property(TARGET ldpc_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
