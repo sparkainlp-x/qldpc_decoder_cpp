@@ -45,3 +45,18 @@ vitis_hls -f hls/run_hls.tcl
 ```
 
 La synthèse FPGA n’est pas exécutée par la CI GitHub Actions standard, car le runner ne fournit ni Vitis HLS ni les bibliothèques AMD HLS. La CI vérifie en revanche les sources C++ portables, les tests Catch2 et le benchmark logiciel.
+
+## Pipeline matériel avec Make
+
+Le [`Makefile`](./Makefile) orchestre les étapes matérielles lorsqu’un environnement AMD est installé :
+
+```bash
+make help
+make hls          # solution HLS 300 MHz
+make hls-400mhz   # solution HLS 400 MHz
+make vivado       # Block Design et export XSA
+make petalinux    # image Linux et BOOT.BIN
+make all          # chaîne complète
+```
+
+Avant son utilisation, charger les environnements Vitis/Vivado et PetaLinux correspondant à l’installation locale. Le dépôt fournit uniquement les sources et scripts ; il ne contient pas un projet PetaLinux initialisé ni les outils AMD.
