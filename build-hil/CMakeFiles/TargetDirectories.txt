@@ -1,7 +1,0 @@
-/home/ubuntu/qldpc_project/build-hil/CMakeFiles/hil_benchmark.dir
-/home/ubuntu/qldpc_project/build-hil/CMakeFiles/qldpc_decoder.dir
-/home/ubuntu/qldpc_project/build-hil/CMakeFiles/ldpc_benchmark.dir
-/home/ubuntu/qldpc_project/build-hil/CMakeFiles/edit_cache.dir
-/home/ubuntu/qldpc_project/build-hil/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/qldpc_project/build-hil/_deps/ldpc-build/CMakeFiles/edit_cache.dir
-/home/ubuntu/qldpc_project/build-hil/_deps/ldpc-build/CMakeFiles/rebuild_cache.dir
