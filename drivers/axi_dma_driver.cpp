@@ -103,10 +103,13 @@ public:
         const auto elapsed_us =
             std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         std::copy(rx_virt_buf_, rx_virt_buf_ + CORRECTION_BYTES, correction_out);
+#if !defined(AXI_DMA_DRIVER_QUIET)
         std::cout << "[ARM Host] Décodage FPGA exécuté en : " << elapsed_us << " us\n";
+#endif
     }
 };
 
+#if !defined(AXI_DMA_DRIVER_NO_MAIN)
 int main()
 {
     AxiDmaDriver dma;
@@ -117,3 +120,4 @@ int main()
     dma.execute_decoding(syndrome, correction);
     return 0;
 }
+#endif

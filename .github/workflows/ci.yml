@@ -63,6 +63,29 @@ jobs:
           source /tools/xilinx/petalinux/2023.2/settings.sh
           make all
 
+      - name: Build HIL benchmark
+        run: |
+          cmake -S . -B build-hil -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_UNIT_TESTS=OFF \
+            -DBUILD_AXI_DMA_DRIVER=OFF \
+            -DBUILD_HIL_BENCHMARK=ON
+          cmake --build build-hil --parallel 2
+
+      - name: Run HIL latency gate
+        env:
+          HIL_NUM_TESTS: 100000
+          HIL_MAX_LATENCY_US: 100
+        run: ./build-hil/hil_benchmark
+
+      - name: Upload HIL latency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: qldpc-hil-latency-report
+          if-no-files-found: error
+          retention-days: 30
+          path: latencies_report.csv
+
       - name: Upload FPGA and PetaLinux artifacts
         uses: actions/upload-artifact@v4
         with:

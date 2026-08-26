@@ -66,3 +66,11 @@ Avant son utilisation, charger les environnements Vitis/Vivado et PetaLinux corr
 Le workflow contient un job `hardware-bitstream-build` qui s’exécute uniquement sur un runner GitHub auto-hébergé portant les labels `self-hosted`, `vivado` et `zcu111`. Ce runner doit disposer de Vitis, Vitis HLS, Vivado, PetaLinux, des licences AMD nécessaires et d’un projet PetaLinux initialisé dans `petalinux/`.
 
 Le job matériel attend la réussite de `software-ci`, lance `make all`, puis publie les fichiers `.xsa`, `BOOT.BIN`, `image.ub` et `download.bit` comme artefacts GitHub Actions. Pour protéger la machine locale, il n’est pas déclenché par les pull requests : les changements doivent d’abord être fusionnés dans `main`, ou le workflow doit être lancé manuellement par un opérateur de confiance.
+
+## Test HIL automatisé
+
+Le benchmark [`hil/hil_benchmark.cpp`](./hil/hil_benchmark.cpp) exécute 100 000 transferts AXI-DMA/FPGA, mesure chaque aller-retour en nanosecondes, exporte `latencies_report.csv` et vérifie la latence maximale.
+
+Le job `hardware-bitstream-build` de GitHub Actions compile ce binaire avec `BUILD_HIL_BENCHMARK=ON`, puis l’exécute avec `HIL_MAX_LATENCY_US=100`. Le job échoue dès qu’une mesure dépasse 100 µs et conserve le CSV comme artefact `qldpc-hil-latency-report`.
+
+Ce test ne doit pas être lancé sur `ubuntu-latest` : il nécessite `/dev/mem`, le contrôleur AXI-DMA, le bitstream chargé, les buffers udmabuf et une carte ZCU111. La vérification FER du fichier HIL est volontairement un point d’extension ; elle doit être remplacée par le calcul réel `H * correction == syndrome` et, si nécessaire, par une vérification d’erreur logique.
