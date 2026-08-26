@@ -30,6 +30,9 @@ option(BUILD_UNIT_TESTS "Build Catch2 unit tests" ON)
 option(BUILD_AXI_DMA_DRIVER "Build the Linux ARM AXI-DMA driver" OFF)
 option(BUILD_HIL_BENCHMARK "Build the hardware-in-the-loop benchmark" OFF)
 option(BUILD_MONTE_CARLO_SIM "Build the Monte-Carlo FER simulator" ON)
+if(BUILD_UNIT_TESTS OR BUILD_MONTE_CARLO_SIM)
+    enable_testing()
+endif()
 if(BUILD_AXI_DMA_DRIVER)
     if(NOT UNIX)
         message(FATAL_ERROR "BUILD_AXI_DMA_DRIVER requires a Unix-like target")
@@ -50,7 +53,6 @@ if(BUILD_UNIT_TESTS)
         GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(Catch2)
-    enable_testing()
 endif()
 
 add_executable(qldpc_decoder main.cpp)
@@ -64,16 +66,17 @@ if(BUILD_UNIT_TESTS)
     target_link_libraries(unit_tests PRIVATE Catch2::Catch2WithMain ldpc OpenMP::OpenMP_CXX)
     target_include_directories(unit_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     add_test(NAME unit_tests COMMAND unit_tests)
-    if(BUILD_MONTE_CARLO_SIM)
-        add_test(
-            NAME monte_carlo_smoke
-            COMMAND monte_carlo_sim
-                --trials 50
-                --ber-list 0.01
-                --csv ${CMAKE_BINARY_DIR}/fer_curve_test.csv
-                --progress-interval 50
-        )
-    endif()
+endif()
+
+if(BUILD_MONTE_CARLO_SIM)
+    add_test(
+        NAME monte_carlo_smoke
+        COMMAND monte_carlo_sim
+            --trials 50
+            --ber-list 0.01
+            --csv ${CMAKE_BINARY_DIR}/fer_curve_test.csv
+            --progress-interval 50
+    )
 endif()
 
 target_link_libraries(qldpc_decoder

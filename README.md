@@ -44,6 +44,8 @@ Options utiles :
 - `--seed 42`
 - `--json fer_curve.json` (export optionnel)
 
+Le CSV conserve volontairement le schéma compact requis (`BER,FER,FramesAtBER,ErrorsAtBER,Timestamp`). L’erreur standard et l’intervalle de confiance à 95 % sont affichés en console et inclus dans l’export JSON optionnel.
+
 Dans la CI logicielle, la simulation est lancée avec `MONTE_CARLO_TRIALS` (défaut: `10000`) et publie `fer_curve.csv` comme artefact.
 
 La première configuration télécharge automatiquement le dépôt amont `quantumgizmos/ldpc` dans le répertoire de build. Le fichier `CMakeLists.txt` utilise `-O3 -march=native -ffast-math -flto` sur les compilateurs non-MSVC et `/O2 /arch:AVX2` sous MSVC.

@@ -44,10 +44,11 @@ jobs:
         run: ./build/ldpc_benchmark
 
       - name: Run Monte-Carlo FER simulation
-        run: >-
-          ./build/monte_carlo_sim
-          --trials "${MONTE_CARLO_TRIALS:-10000}"
-          --csv fer_curve.csv
+        shell: bash
+        run: |
+          set -euo pipefail
+          trials="${MONTE_CARLO_TRIALS:-10000}"
+          ./build/monte_carlo_sim --trials "${trials}" --csv fer_curve.csv
 
       - name: Upload Monte-Carlo FER curve
         uses: actions/upload-artifact@v4

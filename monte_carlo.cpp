@@ -43,6 +43,8 @@ constexpr int kColumns = 4;
 constexpr int kMaxIterations = 40;
 constexpr double kBpScaling = 0.625;
 
+enum class ParseResult { Ok, HelpRequested, Error };
+
 void print_usage(const char* program_name)
 {
     std::cout << "Usage: " << program_name << " [options]\n"
@@ -107,7 +109,7 @@ bool parse_ber_list(const std::string& raw_value, std::vector<double>& values)
     return true;
 }
 
-bool parse_arguments(int argc, char** argv, SimulationConfig& config)
+ParseResult parse_arguments(int argc, char** argv, SimulationConfig& config)
 {
     for (int i = 1; i < argc; ++i) {
         const std::string_view arg(argv[i]);
@@ -122,14 +124,14 @@ bool parse_arguments(int argc, char** argv, SimulationConfig& config)
 
         if (arg == "--help") {
             print_usage(argv[0]);
-            return false;
+            return ParseResult::HelpRequested;
         }
         if (arg == "--trials") {
             const char* value = require_value("--trials");
             if (!value || !parse_size(value, config.trials_per_ber) ||
                 config.trials_per_ber == 0) {
                 std::cerr << "Invalid --trials value.\n";
-                return false;
+                return ParseResult::Error;
             }
             continue;
         }
@@ -137,7 +139,7 @@ bool parse_arguments(int argc, char** argv, SimulationConfig& config)
             const char* value = require_value("--ber-list");
             if (!value || !parse_ber_list(value, config.ber_points)) {
                 std::cerr << "Invalid --ber-list value.\n";
-                return false;
+                return ParseResult::Error;
             }
             continue;
         }
@@ -145,14 +147,14 @@ bool parse_arguments(int argc, char** argv, SimulationConfig& config)
             const char* value = require_value("--seed");
             if (!value || !parse_u32(value, config.seed)) {
                 std::cerr << "Invalid --seed value.\n";
-                return false;
+                return ParseResult::Error;
             }
             continue;
         }
         if (arg == "--csv") {
             const char* value = require_value("--csv");
             if (!value) {
-                return false;
+                return ParseResult::Error;
             }
             config.csv_path = value;
             continue;
@@ -160,7 +162,7 @@ bool parse_arguments(int argc, char** argv, SimulationConfig& config)
         if (arg == "--json") {
             const char* value = require_value("--json");
             if (!value) {
-                return false;
+                return ParseResult::Error;
             }
             config.json_path = value;
             continue;
@@ -169,14 +171,14 @@ bool parse_arguments(int argc, char** argv, SimulationConfig& config)
             const char* value = require_value("--progress-interval");
             if (!value || !parse_size(value, config.progress_interval)) {
                 std::cerr << "Invalid --progress-interval value.\n";
-                return false;
+                return ParseResult::Error;
             }
             continue;
         }
         std::cerr << "Unknown option: " << arg << "\n";
-        return false;
+        return ParseResult::Error;
     }
-    return true;
+    return ParseResult::Ok;
 }
 
 std::string iso8601_now_utc()
@@ -202,24 +204,31 @@ ldpc::bp::BpSparse build_pcm()
 }
 
 std::unique_ptr<ldpc::bp::BpDecoder> build_decoder(ldpc::bp::BpSparse& pcm,
-                                                   double ber)
+                                                   double channel_ber)
 {
-    const double stabilized_ber = std::clamp(ber, 1e-6, 0.49);
-    std::vector<double> channel_probabilities(kColumns, stabilized_ber);
+    std::vector<double> channel_probabilities(kColumns, channel_ber);
     return std::make_unique<ldpc::bp::BpDecoder>(
         pcm, channel_probabilities, kMaxIterations, ldpc::bp::MINIMUM_SUM,
         ldpc::bp::PARALLEL, kBpScaling, 1, std::vector<int>{}, 0, false,
         ldpc::bp::SYNDROME);
 }
 
-bool decode_matches_error(const std::vector<std::uint8_t>& expected_error,
-                          const std::vector<std::uint8_t>& decoded)
+bool decode_is_syndrome_equivalent(ldpc::bp::BpSparse& pcm,
+                                   const std::vector<std::uint8_t>& expected_error,
+                                   const std::vector<std::uint8_t>& decoded)
 {
     if (decoded.size() != expected_error.size()) {
         return false;
     }
+    std::vector<std::uint8_t> residual(expected_error.size(), 0);
     for (std::size_t i = 0; i < expected_error.size(); ++i) {
-        if ((decoded[i] & 1U) != (expected_error[i] & 1U)) {
+        residual[i] = static_cast<std::uint8_t>((decoded[i] ^ expected_error[i]) & 1U);
+    }
+
+    std::vector<std::uint8_t> residual_syndrome(kRows, 0);
+    pcm.mulvec(residual, residual_syndrome);
+    for (std::uint8_t bit : residual_syndrome) {
+        if (bit != 0U) {
             return false;
         }
     }
@@ -233,8 +242,9 @@ FerResult run_single_ber(ldpc::bp::BpSparse& pcm, double ber,
     result.ber = ber;
     result.frames = config.trials_per_ber;
 
-    auto decoder = build_decoder(pcm, ber);
-    std::bernoulli_distribution bit_error_distribution(ber);
+    const double channel_ber = std::clamp(ber, 1e-6, 0.49);
+    auto decoder = build_decoder(pcm, channel_ber);
+    std::bernoulli_distribution bit_error_distribution(channel_ber);
     std::vector<std::uint8_t> error_pattern(kColumns, 0);
     std::vector<std::uint8_t> syndrome(kRows, 0);
 
@@ -250,7 +260,7 @@ FerResult run_single_ber(ldpc::bp::BpSparse& pcm, double ber,
         pcm.mulvec(error_pattern, syndrome);
         decoder->decode(syndrome);
 
-        if (!decode_matches_error(error_pattern, decoder->decoding)) {
+        if (!decode_is_syndrome_equivalent(pcm, error_pattern, decoder->decoding)) {
             ++result.errors;
         }
 
@@ -279,10 +289,11 @@ bool write_csv(const std::string& output_path, const std::vector<FerResult>& res
         return false;
     }
 
+    const std::string generated_at = iso8601_now_utc();
     csv << "BER,FER,FramesAtBER,ErrorsAtBER,Timestamp\n";
     for (const FerResult& result : results) {
         csv << std::setprecision(10) << result.ber << "," << result.fer << ","
-            << result.frames << "," << result.errors << "," << iso8601_now_utc()
+            << result.frames << "," << result.errors << "," << generated_at
             << "\n";
     }
     return true;
@@ -323,10 +334,11 @@ bool write_json(const std::string& output_path, const std::vector<FerResult>& re
 int main(int argc, char** argv)
 {
     SimulationConfig config;
-    if (!parse_arguments(argc, argv, config)) {
-        if (argc > 1 && std::string_view(argv[1]) == "--help") {
-            return 0;
-        }
+    const ParseResult parse_result = parse_arguments(argc, argv, config);
+    if (parse_result == ParseResult::HelpRequested) {
+        return 0;
+    }
+    if (parse_result == ParseResult::Error) {
         print_usage(argv[0]);
         return 1;
     }
