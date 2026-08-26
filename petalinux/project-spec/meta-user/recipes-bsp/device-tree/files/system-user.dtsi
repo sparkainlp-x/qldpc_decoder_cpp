@@ -1,0 +1,51 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        dma_cma_reserved: dma_cma_reserved@70000000 {
+            compatible = "shared-dma-pool";
+            no-map;
+            reg = <0x0 0x70000000 0x0 0x00100000>;
+        };
+    };
+
+    udmabuf_tx {
+        compatible = "ikwzm,udmabuf";
+        device-name = "udmabuf_syndrome_tx";
+        minor-number = <0>;
+        size = <0x00004000>;
+        memory-region = <&dma_cma_reserved>;
+        sync-mode = <3>;
+    };
+
+    udmabuf_rx {
+        compatible = "ikwzm,udmabuf";
+        device-name = "udmabuf_correction_rx";
+        minor-number = <1>;
+        size = <0x00004000>;
+        memory-region = <&dma_cma_reserved>;
+        sync-mode = <3>;
+    };
+};
+
+&amba {
+    axi_dma_0: dma@a0000000 {
+        #dma-cells = <1>;
+        clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk",
+                      "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
+        clocks = <&clk_wiz_300MHz 0>, <&clk_wiz_300MHz 0>,
+                 <&clk_wiz_300MHz 0>, <&clk_wiz_300MHz 0>;
+        compatible = "xlnx,axi-dma-7.1", "xlnx,axi-dma-1.00.a";
+        reg = <0x0 0xa0000000 0x0 0x10000>;
+        xlnx,include-sg = <0x0>;
+        xlnx,include-mm2s = <0x1>;
+        xlnx,include-s2mm = <0x1>;
+        xlnx,datawidth = <0x40>;
+        interrupt-parent = <&gic>;
+        interrupts = <0 89 4>, <0 90 4>;
+    };
+};

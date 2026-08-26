@@ -27,6 +27,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ldpc)
 
 option(BUILD_UNIT_TESTS "Build Catch2 unit tests" ON)
+option(BUILD_AXI_DMA_DRIVER "Build the Linux ARM AXI-DMA driver" OFF)
+if(BUILD_AXI_DMA_DRIVER)
+    if(NOT UNIX)
+        message(FATAL_ERROR "BUILD_AXI_DMA_DRIVER requires a Unix-like target")
+    endif()
+    add_executable(axi_dma_driver drivers/axi_dma_driver.cpp)
+endif()
 if(BUILD_UNIT_TESTS)
     FetchContent_Declare(
         Catch2
@@ -68,5 +75,8 @@ if(NOT MSVC)
     set_property(TARGET ldpc_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
     if(BUILD_UNIT_TESTS)
         set_property(TARGET unit_tests PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+    if(BUILD_AXI_DMA_DRIVER)
+        set_property(TARGET axi_dma_driver PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
     endif()
 endif()
