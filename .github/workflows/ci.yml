@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      run_hardware:
+        description: "Run HLS, Vivado, PetaLinux, and HIL checks on the trusted ZCU111 runner"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -45,7 +51,9 @@ jobs:
 
   hardware-bitstream-build:
     # Ne jamais exécuter du code d’une pull request externe sur un runner local.
-    if: github.event_name != 'pull_request'
+    # The trusted hardware runner is intentionally opt-in to avoid queued CI when
+    # a ZCU111/Vivado runner is offline. Start it manually with run_hardware=true.
+    if: github.event_name == 'workflow_dispatch' && inputs.run_hardware
     needs: software-ci
     runs-on: [self-hosted, vivado, zcu111]
     timeout-minutes: 120
