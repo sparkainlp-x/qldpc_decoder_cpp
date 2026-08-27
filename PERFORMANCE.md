@@ -64,7 +64,7 @@ decoding) after a 10-iteration warm-up phase. It collects 31 samples of
 The CI pipeline exports `fer_curve.csv` with the following schema:
 
 ```
-BER,FER,FramesAtBER,ErrorsAtBER,Timestamp
+BER,FER,FramesAtBER,ErrorsAtBER,StdError,CI95Low,CI95High,Timestamp
 ```
 
 Representative results from the default 5-point sweep:

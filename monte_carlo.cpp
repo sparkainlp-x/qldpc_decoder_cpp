@@ -243,6 +243,11 @@ FerResult run_single_ber(ldpc::bp::BpSparse& pcm, double ber,
     result.frames = config.trials_per_ber;
 
     const double channel_ber = std::clamp(ber, 1e-6, 0.49);
+    if (channel_ber != ber) {
+        std::cerr << "Warning: BER " << ber << " clamped to " << channel_ber
+                  << " for simulation.\n";
+        result.ber = channel_ber;
+    }
     auto decoder = build_decoder(pcm, channel_ber);
     std::bernoulli_distribution bit_error_distribution(channel_ber);
     std::vector<std::uint8_t> error_pattern(kColumns, 0);
@@ -290,11 +295,12 @@ bool write_csv(const std::string& output_path, const std::vector<FerResult>& res
     }
 
     const std::string generated_at = iso8601_now_utc();
-    csv << "BER,FER,FramesAtBER,ErrorsAtBER,Timestamp\n";
+    csv << "BER,FER,FramesAtBER,ErrorsAtBER,StdError,CI95Low,CI95High,Timestamp\n";
     for (const FerResult& result : results) {
         csv << std::setprecision(10) << result.ber << "," << result.fer << ","
-            << result.frames << "," << result.errors << "," << generated_at
-            << "\n";
+            << result.frames << "," << result.errors << ","
+            << result.standard_error << "," << result.ci95_low << ","
+            << result.ci95_high << "," << generated_at << "\n";
     }
     return true;
 }
