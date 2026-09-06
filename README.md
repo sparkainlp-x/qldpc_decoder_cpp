@@ -67,6 +67,15 @@ Le workflow contient un job `hardware-bitstream-build` qui s’exécute uniqueme
 
 Le job matériel attend la réussite de `software-ci`, lance `make all`, puis publie les fichiers `.xsa`, `BOOT.BIN`, `image.ub` et `download.bit` comme artefacts GitHub Actions. Pour protéger la machine locale, il n’est pas déclenché par les pull requests : les changements doivent d’abord être fusionnés dans `main`, ou le workflow doit être lancé manuellement par un opérateur de confiance.
 
+### Politique d'accès aux artifacts sensibles
+
+Les artifacts matériels (bitstream, images boot, configurations) contiennent des designs propriétaires et sont **restreints aux utilisateurs autorisés**. Consultez [`SECURITY.md`](./SECURITY.md) pour les détails sur :
+
+- 🔒 Contrôle d'accès aux artifacts matériels
+- 🔐 Protections de branche et permissions
+- 📋 Processus de déploiement sécurisé
+- ⚠️ Bonnes pratiques de sécurité
+
 ## Test HIL automatisé
 
 Le benchmark [`hil/hil_benchmark.cpp`](./hil/hil_benchmark.cpp) exécute 100 000 transferts AXI-DMA/FPGA, mesure chaque aller-retour en nanosecondes, exporte `latencies_report.csv` et vérifie la latence maximale.

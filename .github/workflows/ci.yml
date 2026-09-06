@@ -15,6 +15,8 @@ on:
 
 permissions:
   contents: read
+  # Restrict artifact access to authorized users only
+  actions: read
 
 jobs:
   software-ci:
@@ -94,7 +96,7 @@ jobs:
           retention-days: 30
           path: latencies_report.csv
 
-      - name: Upload FPGA and PetaLinux artifacts
+      - name: Upload FPGA and PetaLinux artifacts (RESTRICTED - Authorized Users Only)
         uses: actions/upload-artifact@v4
         with:
           name: qldpc-rfsoc-bitstream-artifacts
@@ -105,3 +107,11 @@ jobs:
             petalinux/images/linux/BOOT.BIN
             petalinux/images/linux/image.ub
             petalinux/images/linux/download.bit
+
+      - name: Log artifact access notification
+        if: always()
+        run: |
+          echo "⚠️ SENSITIVE ARTIFACTS UPLOADED"
+          echo "These artifacts (bitstream, BOOT.BIN, image.ub) contain proprietary hardware configuration."
+          echo "Access is restricted to authorized collaborators and the repository owner only."
+          echo "GitHub Actions Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
