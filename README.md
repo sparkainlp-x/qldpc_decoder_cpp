@@ -2,6 +2,32 @@
 
 [![C++ CI](https://github.com/sparkainlp-x/qldpc_decoder_cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/sparkainlp-x/qldpc_decoder_cpp/actions/workflows/ci.yml)
 
+## English summary
+
+A C++/HLS **research scaffold** for a qLDPC decoder: CMake + Catch2 + a sparse GF(2) micro-benchmark, plus Vitis HLS / Vivado / PetaLinux scripts that target the AMD ZCU111 board. It uses Joschka Roffe's [`ldpc`](https://github.com/quantumgizmos/ldpc) library through CMake `FetchContent`. This is research software, not a hardware product and not a quantum-hardware result.
+
+### Evidence status
+
+| Item | Tag | Notes |
+|---|---|---|
+| Software build, Catch2 tests, smoke test | Runs in CI (GitHub-hosted) | |
+| GF(2) sparse mat-vec micro-benchmark, ~70 ns median | **REPORTED; host/conditions unspecified** | A single micro-operation on a synthetic 32×64 matrix. **Not** qLDPC decoding latency, **not** an FPGA or end-to-end figure. CPU, compiler, OS, and raw samples were not recorded |
+| HLS kernel (`hls/qldpc_kernel.cpp`) | Scaffold | No belief-propagation message updates yet |
+| HLS synthesis, 300/400 MHz timing | **TARGET / UNRUN** | Clock periods are set in TCL; no post-route timing report exists |
+| HIL benchmark on ZCU111, FER | **UNRUN** | Needs the board and a self-hosted runner. No run has been published |
+
+### Known limitations
+
+- **`verify_correction()` always returns `true`** (`hil/hil_benchmark.cpp`). Any HIL run would therefore report FER = 0 *by construction*. It must be replaced with a code-aware check (`H · correction = syndrome (mod 2)`, plus a logical-error check against a known injected error) before any FER figure is published.
+- The HLS kernel is an integration skeleton, not a complete BP/OSD decoder.
+- `docs/scientific_review.md` is an **AI-assisted internal review**, not independent peer review.
+
+A French description follows. / La description en français suit.
+
+---
+
+## Description (français)
+
 Exemple C++ minimal utilisant la bibliothèque [`ldpc`](https://github.com/quantumgizmos/ldpc) de Joschka Roffe via CMake `FetchContent`. La configuration active OpenMP ainsi que les optimisations processeur en mode non-MSVC.
 
 ## Prérequis
@@ -23,7 +49,7 @@ cmake --build build --parallel
 
 ## Benchmark de latence
 
-Le projet construit également `ldpc_benchmark`, qui mesure une multiplication matrice-vecteur sparse sur GF(2) après une phase d’échauffement. Il exécute 31 échantillons de 1 000 itérations, puis affiche la latence médiane et le 95e percentile en nanosecondes.
+Le projet construit également `ldpc_benchmark`, qui mesure une multiplication matrice-vecteur sparse sur GF(2) après une phase d’échauffement. Il exécute 31 échantillons de 1 000 itérations, puis affiche la latence médiane et le 95e percentile en nanosecondes. Les valeurs d'environ 70 ns observées jusqu'ici sont **REPORTED ; hôte/conditions non précisés** et concernent une micro-opération, pas le décodage qLDPC complet.
 
 ```bash
 ./build/ldpc_benchmark
@@ -67,7 +93,9 @@ Le workflow contient un job `hardware-bitstream-build` qui s’exécute uniqueme
 
 Le job matériel attend la réussite de `software-ci`, lance `make all`, puis publie les fichiers `.xsa`, `BOOT.BIN`, `image.ub` et `download.bit` comme artefacts GitHub Actions. Pour protéger la machine locale, il n’est pas déclenché par les pull requests : les changements doivent d’abord être fusionnés dans `main`, ou le workflow doit être lancé manuellement par un opérateur de confiance.
 
-## Test HIL automatisé
+## Test HIL automatisé (UNRUN)
+
+> **Statut : UNRUN.** Aucun test HIL n'a été exécuté ni publié. `verify_correction()` retourne toujours `true` (voir « Known limitations » ci-dessus) : tant qu'elle n'est pas remplacée, le FER rapporté vaut 0 par construction.
 
 Le benchmark [`hil/hil_benchmark.cpp`](./hil/hil_benchmark.cpp) exécute 100 000 transferts AXI-DMA/FPGA, mesure chaque aller-retour en nanosecondes, exporte `latencies_report.csv` et vérifie la latence maximale.
 

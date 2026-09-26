@@ -1,6 +1,6 @@
-# Scientific Review of `qldpc_decoder_cpp`
+# AI-assisted internal review of `qldpc_decoder_cpp`
 
-**External technical analysis — Manus AI**  
+**AI-assisted internal review (Manus AI), not independent peer review.** This text was generated with an AI tool at the owner's request. It has not been reviewed by an independent third party.  
 **Repository:** [sparkainlp-x/qldpc_decoder_cpp](https://github.com/sparkainlp-x/qldpc_decoder_cpp)
 
 ## Executive assessment
@@ -27,7 +27,7 @@ The project also contains a reproducible intent for timing closure. The 300 MHz 
 
 ## Benchmark interpretation
 
-The reported software results are approximately 70–76 ns median and 81–87 ns at p95 for a sparse GF(2) operation on a synthetic 32×64 matrix. Those values support the claim that the selected software micro-operation is sub-microsecond on the tested host configuration. They do **not** establish a 70 ns qLDPC decoding latency, an FPGA latency, or an end-to-end host-to-FPGA latency.
+The reported software results are approximately 70–76 ns median and 81–87 ns at p95 for a sparse GF(2) operation on a synthetic 32×64 matrix (**REPORTED; host/conditions unspecified**: CPU model, compiler, OS, affinity, and raw samples were not recorded alongside these numbers). Those values support the claim that the selected software micro-operation is sub-microsecond on the tested host configuration. They do **not** establish a 70 ns qLDPC decoding latency, an FPGA latency, or an end-to-end host-to-FPGA latency.
 
 A publication-quality benchmark should report the processor model, compiler version, operating-system version, CPU affinity, number of repetitions, warm-up policy, clock source, raw samples, and confidence intervals. It should also compare the optimized implementation with a defined baseline. Without those controls, the numbers are useful engineering observations but not yet a portable performance claim.
 
