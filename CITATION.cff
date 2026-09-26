@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below, and also cite the upstream ldpc library."
+title: "qldpc_decoder_cpp: C++/HLS qLDPC decoder research scaffold"
+type: software
+authors:
+  - family-names: "Brisson"
+    given-names: "Jean-François"
+    affiliation: "Spark AI NLP"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: add ORCID when available
+repository-code: "https://github.com/sparkainlp-x/qldpc_decoder_cpp"
+url: "https://sparkainlpx.xyz"
+license: MIT
+version: "0.1.0"
+date-released: "2026-09-26"
+abstract: >-
+  C++20 research scaffold for a qLDPC decoder: CMake + Catch2 + a sparse GF(2)
+  mat-vec micro-benchmark, with Vitis HLS / Vivado / PetaLinux scripts targeting
+  the AMD ZCU111 board. The HLS belief-propagation kernel and HIL FER verification
+  are placeholders; all hardware results are UNRUN. Uses the ldpc library by
+  Joschka Roffe via CMake FetchContent.
+keywords:
+  - ldpc
+  - qldpc
+  - error-correction
+  - cpp
+  - hls
+  - fpga
+references:
+  - type: software
+    title: "ldpc"
+    authors:
+      - family-names: "Roffe"
+        given-names: "Joschka"
+    repository-code: "https://github.com/quantumgizmos/ldpc"
