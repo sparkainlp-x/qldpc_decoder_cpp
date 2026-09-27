@@ -10,6 +10,14 @@ authors:
 repository-code: "https://github.com/sparkainlp-x/qldpc_decoder_cpp"
 url: "https://sparkainlpx.xyz"
 license: MIT
+doi: "10.5281/zenodo.22985527"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22985527"
+    description: "Concept DOI (all versions, Zenodo)"
+  - type: doi
+    value: "10.5281/zenodo.22985528"
+    description: "Version DOI for v0.1.1 (Zenodo)"
 version: "0.1.1"
 date-released: "2026-09-26"
 abstract: >-

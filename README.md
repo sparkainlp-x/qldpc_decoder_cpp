@@ -6,6 +6,7 @@ C++/HLS **research scaffold** for a qLDPC decoder: CMake + Catch2 + a sparse GF(
 [![C++ CI](https://github.com/sparkainlp-x/qldpc_decoder_cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/sparkainlp-x/qldpc_decoder_cpp/actions/workflows/ci.yml)
 [![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#what-it-is-not)
 [![Hardware results: UNRUN](https://img.shields.io/badge/hardware%20results-UNRUN-lightgrey.svg)](#evidence-tags)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22985527.svg)](https://doi.org/10.5281/zenodo.22985527)
 
 *English first; the original French documentation follows below. / La documentation originale en français suit.*
 
@@ -75,6 +76,8 @@ Tag definitions: [sparkainlp-x/.github](https://github.com/sparkainlp-x/.github#
 ADR-001 governs the OES-32 residual family (normative: [oes32-residual@b77b612](https://github.com/sparkainlp-x/oes32-residual/tree/b77b61254f15778c6ae221843dceac7a8571158e); Profile A sidecars: [oes32_engine](https://github.com/sparkainlp-x/oes32_engine), [oes32-hls](https://github.com/sparkainlp-x/oes32-hls)). This decoder scaffold is **independent** of that contract: it does not compute or redefine the OES-32 residual. It shares only the ZCU111 TARGET platform with `oes32-hls`.
 
 ## Citation
+
+Archived on Zenodo: concept DOI [10.5281/zenodo.22985527](https://doi.org/10.5281/zenodo.22985527) (all versions; resolves to the latest). The v0.1.1 archive is [10.5281/zenodo.22985528](https://doi.org/10.5281/zenodo.22985528).
 
 Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button. Please also cite the upstream [`ldpc`](https://github.com/quantumgizmos/ldpc) library by Joschka Roffe.
 
