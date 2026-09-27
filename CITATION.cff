@@ -10,7 +10,7 @@ authors:
 repository-code: "https://github.com/sparkainlp-x/qldpc_decoder_cpp"
 url: "https://sparkainlpx.xyz"
 license: MIT
-version: "0.1.0"
+version: "0.1.1"
 date-released: "2026-09-26"
 abstract: >-
   C++20 research scaffold for a qLDPC decoder: CMake + Catch2 + a sparse GF(2)
