@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install build dependencies
         run: |
@@ -50,7 +50,7 @@ jobs:
         run: ./build/ldpc_benchmark
 
   hardware-bitstream-build:
-    # Ne jamais exécuter du code d’une pull request externe sur un runner local.
+    # Never run code from an external pull request on a local runner.
     # The trusted hardware runner is intentionally opt-in to avoid queued CI when
     # a ZCU111/Vivado runner is offline. Start it manually with run_hardware=true.
     if: github.event_name == 'workflow_dispatch' && inputs.run_hardware
@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build HLS, Vivado and PetaLinux artifacts
         shell: bash
@@ -87,7 +87,7 @@ jobs:
         run: ./build-hil/hil_benchmark
 
       - name: Upload HIL latency report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qldpc-hil-latency-report
           if-no-files-found: error
@@ -95,7 +95,7 @@ jobs:
           path: latencies_report.csv
 
       - name: Upload FPGA and PetaLinux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qldpc-rfsoc-bitstream-artifacts
           if-no-files-found: error

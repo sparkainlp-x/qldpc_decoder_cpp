@@ -1,12 +1,14 @@
-# Déploiement ZCU111 : PetaLinux, FPGA et driver ARM
+# ZCU111 deployment: PetaLinux, FPGA and ARM driver (UNRUN)
 
-Cette procédure décrit le déploiement de la chaîne qLDPC sur une carte AMD/Xilinx Zynq UltraScale+ RFSoC ZCU111. Elle suppose que les artefacts PetaLinux, le bitstream FPGA, l’overlay Device Tree et le driver ARM ont déjà été générés.
+> **Status: UNRUN.** This procedure has not been executed and no board results are published. It documents the intended flow only.
 
-## 1. Préparer la carte MicroSD
+This procedure describes deploying the qLDPC chain to an AMD/Xilinx Zynq UltraScale+ RFSoC ZCU111 board. It assumes that the PetaLinux artifacts, the FPGA bitstream, the Device Tree overlay and the ARM driver have already been generated.
 
-Créer deux partitions : une partition `BOOT` en FAT32 d’au moins 1 Go avec les drapeaux `boot` et `lba`, puis une partition `rootfs` en ext4 avec l’espace restant.
+## 1. Prepare the microSD card
 
-Copier les fichiers de démarrage dans la partition FAT32 :
+Create two partitions: a FAT32 `BOOT` partition of at least 1 GB with the `boot` and `lba` flags, and an ext4 `rootfs` partition with the remaining space.
+
+Copy the boot files to the FAT32 partition:
 
 ```bash
 cp BOOT.BIN image.ub boot.scr /media/$USER/BOOT/
@@ -14,17 +16,17 @@ sudo tar -xvf rootfs.tar.gz -C /media/$USER/rootfs/
 sync
 ```
 
-Configurer le commutateur de démarrage SW6 de la ZCU111 en mode SD : switch 1 `OFF`, switch 2 `ON`, switch 3 `OFF`, switch 4 `OFF`.
+Set the ZCU111 boot switch SW6 to SD mode: switch 1 `OFF`, switch 2 `ON`, switch 3 `OFF`, switch 4 `OFF`.
 
-## 2. Démarrer la carte et programmer le FPGA
+## 2. Boot the board and program the FPGA
 
-Connecter le port USB-UART, puis ouvrir la console série à 115200 bauds :
+Connect the USB-UART port and open the serial console at 115200 baud:
 
 ```bash
 picocom -b 115200 /dev/ttyUSB1
 ```
 
-Pour programmer un bitstream dynamiquement avec FPGA Manager, copier le bitstream et l’overlay dans `/lib/firmware`, puis exécuter :
+To program a bitstream dynamically with FPGA Manager, copy the bitstream and overlay to `/lib/firmware`, then run:
 
 ```bash
 mkdir -p /lib/firmware
@@ -34,39 +36,39 @@ fpgautil -b /lib/firmware/qldpc_decoder.bit.bin \
     -o /lib/firmware/qldpc_overlay.dtbo
 ```
 
-La LED DONE de la carte doit confirmer la programmation du FPGA.
+The board's DONE LED should confirm that the FPGA is programmed.
 
-## 3. Compiler et exécuter le driver ARM
+## 3. Build and run the ARM driver
 
-Transférer le driver sur la carte :
+Copy the driver to the board:
 
 ```bash
-scp axi_dma_driver.cpp root@<IP_CARTE_ZCU111>:/root/
+scp axi_dma_driver.cpp root@<ZCU111_BOARD_IP>:/root/
 ```
 
-Le compiler pour le Cortex-A53 :
+Compile it for the Cortex-A53:
 
 ```bash
 g++ -O3 -march=armv8-a -mcpu=cortex-a53 \
     axi_dma_driver.cpp -o axi_dma_driver
 ```
 
-Vérifier la présence des buffers udmabuf :
+Check that the udmabuf buffers exist:
 
 ```bash
 ls -l /dev/udmabuf*
 ```
 
-Lancer ensuite le driver avec les privilèges nécessaires :
+Then run the driver with the required privileges:
 
 ```bash
 ./axi_dma_driver
 ```
 
-## 4. Précautions matérielles
+## 4. Hardware precautions
 
-Les adresses AXI-DMA, les canaux, les interruptions, la largeur de données et les adresses physiques des buffers doivent correspondre exactement au Block Design Vivado et au Device Tree déployés. Ne pas utiliser les adresses d’exemple sur une carte différente ou sans vérifier la réservation CMA/udmabuf.
+AXI-DMA addresses, channels, interrupts, data width and physical buffer addresses must match the deployed Vivado Block Design and Device Tree exactly. Do not use the example addresses on a different board or without checking the CMA/udmabuf reservation.
 
-Le driver utilise un accès matériel privilégié à `/dev/mem` dans sa version actuelle. Il ne doit pas être exécuté sur un poste de développement ou sur une carte dont la cartographie mémoire n’a pas été validée. La version avec udmabuf doit récupérer les adresses physiques depuis `/sys/class/u-dma-buf/` et mapper les périphériques `/dev/udmabuf_*` plutôt que de dépendre d’adresses physiques codées en dur.
+The current driver uses privileged hardware access through `/dev/mem`. Do not run it on a development workstation or on a board whose memory map has not been validated. A udmabuf version should read physical addresses from `/sys/class/u-dma-buf/` and map the `/dev/udmabuf_*` devices instead of relying on hard-coded physical addresses.
 
-La CI GitHub Actions ne peut pas exécuter cette procédure : elle ne dispose ni du matériel ZCU111, ni de Vivado/Vitis HLS, ni des périphériques Linux embarqués nécessaires. Elle continue de valider les tests logiciels, le benchmark et la cohérence des sources.
+GitHub Actions CI cannot run this procedure: it has no ZCU111 hardware, no Vivado/Vitis HLS, and none of the required embedded Linux devices. CI continues to validate the software tests, the micro-benchmark and source consistency.

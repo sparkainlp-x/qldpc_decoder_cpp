@@ -1,1 +1,28 @@
-# ==============================================================================\n# Script de synthèse automatique AMD Vitis HLS - Décodeur qLDPC\n# ==============================================================================\n\nset script_dir [file dirname [file normalize [info script]]]\n\nopen_project qldpc_hls_project\nset_top qldpc_decode_kernel\n\nadd_files "$script_dir/qldpc_kernel.cpp" -cflags "-std=c++14 -I$script_dir"\nadd_files -tb "$script_dir/testbench.cpp" -cflags "-std=c++14 -I$script_dir"\n\nopen_solution "solution_300mhz" -flow_target vitis\nset_part {xczu28dr-ffvg1517-2-e}\ncreate_clock -period 3.33 -name default\n\nconfig_interface -m_axi_addr64\nconfig_compile -pipeline_loops 1\n\ncsim_design\ncsynth_design\ncosim_design -trace_level all\nexport_design -format ip_catalog \\\n    -description "qLDPC BP-OSD-CS Hardware Decoder Kernel" \\\n    -vendor "sparkainlp" -version "1.0"\n\nexit\n
+# ==============================================================================
+# AMD Vitis HLS synthesis script - qLDPC decoder (300 MHz TARGET; UNRUN in CI)
+# ==============================================================================
+
+set script_dir [file dirname [file normalize [info script]]]
+
+open_project qldpc_hls_project
+set_top qldpc_decode_kernel
+
+add_files "$script_dir/qldpc_kernel.cpp" -cflags "-std=c++14 -I$script_dir"
+add_files -tb "$script_dir/testbench.cpp" -cflags "-std=c++14 -I$script_dir"
+
+open_solution "solution_300mhz" -flow_target vitis
+set_part {xczu28dr-ffvg1517-2-e}
+create_clock -period 3.33 -name default
+
+config_interface -m_axi_addr64
+config_compile -pipeline_loops 1
+
+csim_design
+csynth_design
+cosim_design -trace_level all
+export_design -format ip_catalog \
+    -description "qLDPC BP-OSD-CS Hardware Decoder Kernel" \
+    -vendor "sparkainlp" -version "1.0"
+
+exit
+

@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-// À ajuster selon l’adresse réellement attribuée dans le Block Design Vivado.
+// Adjust to the address actually assigned in the Vivado Block Design.
 constexpr uintptr_t AXI_DMA_BASE_ADDR = 0xA0000000;
 constexpr size_t AXI_DMA_MAP_SIZE = 0x10000;
 
@@ -34,7 +34,7 @@ private:
     uint8_t* tx_virt_buf_ = nullptr;
     uint8_t* rx_virt_buf_ = nullptr;
 
-    // Ces adresses doivent correspondre à une zone CMA/udmabuf réservée.
+    // These addresses must match a reserved CMA/udmabuf region.
     uintptr_t tx_phys_addr_ = 0x10000000;
     uintptr_t rx_phys_addr_ = 0x10020000;
 
@@ -53,7 +53,7 @@ public:
         void* mapped = mmap(nullptr, AXI_DMA_MAP_SIZE, PROT_READ | PROT_WRITE,
                             MAP_SHARED, dev_mem_fd_, AXI_DMA_BASE_ADDR);
         if (mapped == MAP_FAILED) {
-            std::cerr << "Erreur: échec du mappage des registres AXI-DMA\n";
+            std::cerr << "Error: failed to map AXI-DMA registers\n";
             return false;
         }
         dma_regs_ = reinterpret_cast<volatile uint32_t*>(mapped);
@@ -66,7 +66,7 @@ public:
             dev_mem_fd_, rx_phys_addr_));
 
         if (tx_virt_buf_ == MAP_FAILED || rx_virt_buf_ == MAP_FAILED) {
-            std::cerr << "Erreur: échec du mappage des tampons DMA\n";
+            std::cerr << "Error: failed to map DMA buffers\n";
             return false;
         }
 
@@ -104,7 +104,7 @@ public:
             std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         std::copy(rx_virt_buf_, rx_virt_buf_ + CORRECTION_BYTES, correction_out);
 #if !defined(AXI_DMA_DRIVER_QUIET)
-        std::cout << "[ARM Host] Décodage FPGA exécuté en : " << elapsed_us << " us\n";
+        std::cout << "[ARM Host] FPGA decode took: " << elapsed_us << " us\n";
 #endif
     }
 };

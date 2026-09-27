@@ -1,28 +1,30 @@
-# Block Design Vivado RFSoC
+# Vivado Block Design for the RFSoC (UNRUN)
 
-Le script [`create_bd.tcl`](./create_bd.tcl) génère le Block Design `system_bd` pour un AMD Zynq UltraScale+ RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`). Il ajoute le dépôt IP produit par Vitis HLS, instancie le processeur RFSoC, le convertisseur RF, les FIFOs AXI4-Stream et le noyau `qldpc_decode_kernel`.
+> **Status: UNRUN.** These scripts have not been run in CI and no timing or implementation report is published. Frequencies below are **TARGET** values.
 
-Le script suppose que le projet Vitis HLS a déjà été généré avec l’IP disponible à l’emplacement suivant :
+The script [`create_bd.tcl`](./create_bd.tcl) generates the `system_bd` Block Design for an AMD Zynq UltraScale+ RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`). It adds the IP repository produced by Vitis HLS and instantiates the RFSoC processing system, the RF data converter, AXI4-Stream FIFOs and the `qldpc_decode_kernel` core.
+
+The script assumes that the Vitis HLS project has already been generated, with the IP available at:
 
 ```text
 ./qldpc_hls_project/solution_300mhz/impl/ip
 ```
 
-Depuis un environnement AMD Vivado correctement configuré, lancer :
+From a correctly configured AMD Vivado environment, run:
 
 ```bash
 vivado -mode batch -source vivado/create_bd.tcl
 ```
 
-Le script exécute ensuite `validate_bd_design` et sauvegarde le Block Design. La génération dépend des versions installées des IP AMD/Xilinx et ne peut pas être validée dans la CI logicielle standard, qui ne fournit pas Vivado ni les licences FPGA nécessaires.
+The script then runs `validate_bd_design` and saves the Block Design. Generation depends on the installed AMD/Xilinx IP versions and cannot be validated in the standard software CI, which provides neither Vivado nor the required FPGA licences.
 
-## Variante 400 MHz
+## 400 MHz variant
 
-La variante [`../hls/run_hls_400mhz.tcl`](../hls/run_hls_400mhz.tcl) crée une solution `solution_400mhz` avec une période cible de `2.500 ns`. Le script [`optimize_timing_400mhz.tcl`](./optimize_timing_400mhz.tcl) active le retiming, les stratégies d’implémentation orientées performance et génère `timing_400mhz_report.txt`.
+[`../hls/run_hls_400mhz.tcl`](../hls/run_hls_400mhz.tcl) creates a `solution_400mhz` solution with a `2.500 ns` target period. [`optimize_timing_400mhz.tcl`](./optimize_timing_400mhz.tcl) enables retiming and performance-oriented implementation strategies and writes `timing_400mhz_report.txt`.
 
 ```bash
 vitis_hls -f hls/run_hls_400mhz.tcl
 vivado -mode batch -source vivado/optimize_timing_400mhz.tcl
 ```
 
-La cible 400 MHz n’est atteinte que si le rapport post-routage confirme un WNS supérieur ou égal à `0 ns`. Les directives d’optimisation ne constituent pas une garantie de fréquence : la validation dépend du placement-routage réel, de la version des outils, des contraintes d’horloge et de la configuration exacte du Block Design.
+The 400 MHz target is met only if the post-route report shows WNS ≥ `0 ns`. The optimisation directives do not guarantee the frequency: closure depends on actual place-and-route, tool version, clock constraints and the exact Block Design configuration.

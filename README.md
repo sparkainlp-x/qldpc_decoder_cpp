@@ -8,7 +8,7 @@ C++/HLS **research scaffold** for a qLDPC decoder: CMake + Catch2 + a sparse GF(
 [![Hardware results: UNRUN](https://img.shields.io/badge/hardware%20results-UNRUN-lightgrey.svg)](#evidence-tags)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22985527.svg)](https://doi.org/10.5281/zenodo.22985527)
 
-*English first; the original French documentation follows below. / La documentation originale en français suit.*
+*English documentation. A French translation can be provided on request.*
 
 ## What it is
 
@@ -39,8 +39,8 @@ cmake --build build --parallel
 Expected output:
 
 ```text
-qldpc_decoder_cpp: bibliothèque ldpc chargée avec succès.
-OpenMP est activé au niveau de la cible CMake.
+qldpc_decoder_cpp: ldpc library loaded.
+OpenMP is enabled on the CMake target.
 ```
 
 `CMakeLists.txt` uses `-O3 -march=native -ffast-math -flto` on non-MSVC compilers, so the binary is tuned to the build machine.
@@ -87,79 +87,81 @@ Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this 
 
 ---
 
-## Description en français
+## Build, benchmark and hardware flow (details)
 
-Exemple C++ minimal utilisant la bibliothèque [`ldpc`](https://github.com/quantumgizmos/ldpc) de Joschka Roffe via CMake `FetchContent`. La configuration active OpenMP ainsi que les optimisations processeur en mode non-MSVC.
+Minimal C++ example that uses Joschka Roffe's [`ldpc`](https://github.com/quantumgizmos/ldpc) library through CMake `FetchContent`. OpenMP and CPU optimisations are enabled for non-MSVC compilers.
 
-### Prérequis
+### Prerequisites
 
-Il faut disposer de CMake 3.20 ou ultérieur, d’un compilateur C++ compatible C++20, de Git et d’une implémentation OpenMP.
+CMake 3.20 or later, a C++20 compiler, Git, and an OpenMP implementation.
 
-### Compilation
+### Build
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 ```
 
-### Exécution
+### Run
 
 ```bash
 ./build/qldpc_decoder
 ```
 
-### Benchmark de latence
+### Latency micro-benchmark
 
-Le projet construit également `ldpc_benchmark`, qui mesure une multiplication matrice-vecteur sparse sur GF(2) après une phase d’échauffement. Il exécute 31 échantillons de 1 000 itérations, puis affiche la latence médiane et le 95e percentile en nanosecondes. Les valeurs d'environ 70 ns observées jusqu'ici sont **REPORTED ; hôte/conditions non précisés** et concernent une micro-opération, pas le décodage qLDPC complet.
+The project also builds `ldpc_benchmark`, which times a sparse GF(2) matrix-vector product after a warm-up phase. It runs 31 samples of 1,000 iterations and prints the median and 95th-percentile latency in nanoseconds. The values of about 70 ns observed so far are **REPORTED; host/conditions unspecified** and concern a single micro-operation, not full qLDPC decoding.
 
 ```bash
 ./build/ldpc_benchmark
 ```
 
-Dans GitHub Actions, le benchmark échoue si la médiane atteint ou dépasse `1000 ns` (`1 µs`). Le seuil peut être changé avec la variable d’environnement `LDPC_MAX_LATENCY_NS`. Les runners GitHub-hosted étant virtualisés et partagés, le résultat est un contrôle de régression indicatif et ne remplace pas une mesure sur machine dédiée.
+In GitHub Actions the benchmark fails if the median reaches or exceeds `1000 ns` (`1 µs`). The threshold can be changed with the `LDPC_MAX_LATENCY_NS` environment variable. GitHub-hosted runners are virtualised and shared, so this is an indicative regression check, not a measurement on dedicated hardware.
 
-La première configuration télécharge automatiquement le dépôt amont `quantumgizmos/ldpc` dans le répertoire de build. Le fichier `CMakeLists.txt` utilise `-O3 -march=native -ffast-math -flto` sur les compilateurs non-MSVC et `/O2 /arch:AVX2` sous MSVC.
+The first configure step downloads the upstream `quantumgizmos/ldpc` repository into the build directory. `CMakeLists.txt` uses `-O3 -march=native -ffast-math -flto` on non-MSVC compilers and `/O2 /arch:AVX2` on MSVC.
 
-> `-march=native` produit un binaire adapté à la machine de compilation. Pour distribuer le binaire sur d’autres processeurs, remplacez ce drapeau par une architecture cible portable.
+> `-march=native` produces a binary tuned to the build machine. To distribute the binary to other CPUs, replace this flag with a portable target architecture.
 
-### Synthèse AMD Vitis HLS
+### AMD Vitis HLS synthesis (UNRUN)
 
-Le répertoire `hls/` contient le noyau `qldpc_decode_kernel`, son testbench et le script `run_hls.tcl` ciblant le RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`) à 300 MHz. Depuis un environnement où Vitis HLS 2023.2 est installé :
+The `hls/` directory contains the `qldpc_decode_kernel` kernel, its testbench and the `run_hls.tcl` script targeting the RFSoC ZCU111 (`xczu28dr-ffvg1517-2-e`) at 300 MHz (**TARGET**). From an environment with Vitis HLS 2023.2 installed:
 
 ```bash
 source /tools/Xilinx/Vitis_HLS/2023.2/settings64.sh
 vitis_hls -f hls/run_hls.tcl
 ```
 
-La synthèse FPGA n’est pas exécutée par la CI GitHub Actions standard, car le runner ne fournit ni Vitis HLS ni les bibliothèques AMD HLS. La CI vérifie en revanche les sources C++ portables, les tests Catch2 et le benchmark logiciel.
+FPGA synthesis is not run by the standard GitHub Actions CI, because the hosted runner provides neither Vitis HLS nor the AMD HLS libraries. CI does verify the portable C++ sources, the Catch2 tests and the software micro-benchmark.
 
-### Pipeline matériel avec Make
+### Hardware pipeline with Make (UNRUN)
 
-Le [`Makefile`](./Makefile) orchestre les étapes matérielles lorsqu’un environnement AMD est installé :
+The [`Makefile`](./Makefile) orchestrates the hardware steps when an AMD toolchain is installed:
 
 ```bash
 make help
-make hls          # solution HLS 300 MHz
-make hls-400mhz   # solution HLS 400 MHz
-make vivado       # Block Design et export XSA
-make petalinux    # image Linux et BOOT.BIN
-make all          # chaîne complète
+make hls          # 300 MHz HLS solution
+make hls-400mhz   # 400 MHz HLS solution
+make vivado       # Block Design and XSA export
+make petalinux    # Linux image and BOOT.BIN
+make all          # full chain
 ```
 
-Avant son utilisation, charger les environnements Vitis/Vivado et PetaLinux correspondant à l’installation locale. Le dépôt fournit uniquement les sources et scripts ; il ne contient pas un projet PetaLinux initialisé ni les outils AMD.
+Source the Vitis/Vivado and PetaLinux environments for your local installation first. The repository provides sources and scripts only; it does not contain an initialised PetaLinux project or the AMD tools.
 
-### CI matérielle sur runner auto-hébergé
+### Hardware CI on a self-hosted runner (opt-in)
 
-Le workflow contient un job `hardware-bitstream-build` qui s’exécute uniquement sur un runner GitHub auto-hébergé portant les labels `self-hosted`, `vivado` et `zcu111`. Ce runner doit disposer de Vitis, Vitis HLS, Vivado, PetaLinux, des licences AMD nécessaires et d’un projet PetaLinux initialisé dans `petalinux/`.
+The workflow contains a `hardware-bitstream-build` job that runs only on a self-hosted GitHub runner labelled `self-hosted`, `vivado` and `zcu111`. That runner needs Vitis, Vitis HLS, Vivado, PetaLinux, the required AMD licences, and an initialised PetaLinux project in `petalinux/`.
 
-Le job matériel attend la réussite de `software-ci`, lance `make all`, puis publie les fichiers `.xsa`, `BOOT.BIN`, `image.ub` et `download.bit` comme artefacts GitHub Actions. Pour protéger la machine locale, il n’est pas déclenché par les pull requests : les changements doivent d’abord être fusionnés dans `main`, ou le workflow doit être lancé manuellement par un opérateur de confiance.
+The hardware job waits for `software-ci` to pass, runs `make all`, and publishes the `.xsa`, `BOOT.BIN`, `image.ub` and `download.bit` files as GitHub Actions artifacts. To protect the local machine it is not triggered by pull requests: changes must first be merged into `main`, or a trusted operator must start the workflow manually.
 
-### Test HIL automatisé (UNRUN)
+### Automated HIL test (UNRUN)
 
-> **Statut : UNRUN.** Aucun test HIL n'a été exécuté ni publié. `verify_correction()` retourne toujours `true` (voir « Known limitations » ci-dessus) : tant qu'elle n'est pas remplacée, le FER rapporté vaut 0 par construction.
+> **Status: UNRUN.** No HIL test has been run or published. `verify_correction()` always returns `true` (see "Known limitations" above); until it is replaced, the reported FER is 0 by construction.
 
-Le benchmark [`hil/hil_benchmark.cpp`](./hil/hil_benchmark.cpp) exécute 100 000 transferts AXI-DMA/FPGA, mesure chaque aller-retour en nanosecondes, exporte `latencies_report.csv` et vérifie la latence maximale.
+The benchmark [`hil/hil_benchmark.cpp`](./hil/hil_benchmark.cpp) performs 100,000 AXI-DMA/FPGA transfers, times each round trip in nanoseconds, exports `latencies_report.csv` and checks the maximum latency.
 
-Le job `hardware-bitstream-build` de GitHub Actions compile ce binaire avec `BUILD_HIL_BENCHMARK=ON`, puis l’exécute avec `HIL_MAX_LATENCY_US=100`. Le job échoue dès qu’une mesure dépasse 100 µs et conserve le CSV comme artefact `qldpc-hil-latency-report`.
+The `hardware-bitstream-build` job compiles this binary with `BUILD_HIL_BENCHMARK=ON` and runs it with `HIL_MAX_LATENCY_US=100`. The job fails as soon as one measurement exceeds 100 µs and keeps the CSV as the `qldpc-hil-latency-report` artifact.
 
-Ce test ne doit pas être lancé sur `ubuntu-latest` : il nécessite `/dev/mem`, le contrôleur AXI-DMA, le bitstream chargé, les buffers udmabuf et une carte ZCU111. La vérification FER du fichier HIL est volontairement un point d’extension ; elle doit être remplacée par le calcul réel `H * correction == syndrome` et, si nécessaire, par une vérification d’erreur logique.
+This test must not run on `ubuntu-latest`: it needs `/dev/mem`, the AXI-DMA controller, a loaded bitstream, udmabuf buffers and a ZCU111 board. FER verification in the HIL file is deliberately an extension point; it must be replaced by the real `H * correction == syndrome` check and, if needed, a logical-error check.
+
+See also [`docs/deployment-zcu111.md`](docs/deployment-zcu111.md) and [`vivado/README.md`](vivado/README.md).

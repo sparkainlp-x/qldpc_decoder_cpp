@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
 project(qldpc_decoder_cpp LANGUAGES CXX)
 
-# La version actuelle de ldpc utilise des fonctionnalités C++20.
+# The current ldpc release uses C++20 features.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Optimisations adaptées à une compilation Release sur la machine hôte.
+# Optimisations for a Release build on the host machine.
 if(MSVC)
     add_compile_options(/O2 /arch:AVX2)
 else()
     add_compile_options(-O3 -march=native -ffast-math -flto)
 endif()
 
-# OpenMP est requis pour les chemins parallélisés de l’application.
+# OpenMP is required for the parallel code paths.
 find_package(OpenMP REQUIRED)
 
-# Bibliothèque C++ ldpc de Joschka Roffe.
+# Joschka Roffe's ldpc C++ library.
 include(FetchContent)
 FetchContent_Declare(
     ldpc

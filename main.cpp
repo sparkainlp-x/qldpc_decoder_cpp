@@ -4,7 +4,7 @@
 
 int main()
 {
-    std::cout << "qldpc_decoder_cpp: bibliothèque ldpc chargée avec succès.\n";
-    std::cout << "OpenMP est activé au niveau de la cible CMake.\n";
+    std::cout << "qldpc_decoder_cpp: ldpc library loaded.\n";
+    std::cout << "OpenMP is enabled on the CMake target.\n";
     return 0;
 }
