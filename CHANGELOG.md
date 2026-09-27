@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows
 - `hls/run_hls.tcl` was stored as a single line with literal `\n` sequences, so Tcl read the whole file as one comment and the script did nothing. It is now a normal multi-line script (synthesis is still UNRUN in CI).
 
 ### Changed
+- `.zenodo.json` adds the `spark-ai-nlp` Zenodo community.
 - Documentation is English throughout: the README's French section, `docs/deployment-zcu111.md`, `vivado/README.md`, Makefile messages, and code comments and console strings. Hardware documents carry explicit UNRUN / TARGET status notes.
 - CI actions bumped to `actions/checkout@v7` and `actions/upload-artifact@v7` (Node 24).
 
