@@ -34,7 +34,7 @@ double max_latency_us()
     return 100.0;
 }
 
-// Remplacer par H * correction == syndrome et le contrôle d’erreur logique.
+// Replace with H * correction == syndrome and a logical-error check.
 bool verify_correction(const uint8_t*, const uint8_t*)
 {
     return true;
@@ -59,7 +59,7 @@ int main()
     int logical_errors = 0;
 
     std::cout << "[HIL] Lancement de " << num_tests
-              << " décodages matériels.\n";
+              << " hardware decodes.\n";
     for (int i = 0; i < num_tests; ++i) {
         for (auto& byte : syndrome) {
             byte = static_cast<uint8_t>(distribution(generator));
@@ -91,7 +91,7 @@ int main()
 
     std::ofstream csv("latencies_report.csv");
     if (!csv) {
-        std::cerr << "Erreur: impossible de créer latencies_report.csv\n";
+        std::cerr << "Error: cannot create latencies_report.csv\n";
         return 1;
     }
     csv << "index,latency_ns\n";
@@ -108,10 +108,10 @@ int main()
 
     const double limit = max_latency_us();
     if (max_ns / 1000.0 > limit) {
-        std::cerr << "FAIL: latence maximale supérieure à " << limit
+        std::cerr << "FAIL: maximum latency above " << limit
                   << " us.\n";
         return 2;
     }
-    std::cout << "PASS: toutes les latences sont sous " << limit << " us.\n";
+    std::cout << "PASS: all latencies are below " << limit << " us.\n";
     return 0;
 }

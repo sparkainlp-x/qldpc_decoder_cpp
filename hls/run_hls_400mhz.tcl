@@ -1,5 +1,5 @@
 # ================================================================================
-# Synthèse Vitis HLS qLDPC - cible 400 MHz
+# qLDPC Vitis HLS synthesis - 400 MHz TARGET (UNRUN in CI)
 # ================================================================================
 
 set script_dir [file dirname [file normalize [info script]]]

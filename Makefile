@@ -1,5 +1,5 @@
 # ================================================================================
-# Pipeline matériel et embarqué qLDPC : HLS -> Vivado -> PetaLinux
+# qLDPC hardware and embedded pipeline: HLS -> Vivado -> PetaLinux (UNRUN)
 # ================================================================================
 
 HLS_DIR       := hls
@@ -18,33 +18,33 @@ help:
 	@echo "===================================================================="
 	@echo " Makefile qLDPC - Pipeline ZCU111 RFSoC"
 	@echo "===================================================================="
-	@echo " make hls        Synthèse Vitis HLS à 300 MHz"
-	@echo " make hls-400mhz Synthèse Vitis HLS à 400 MHz"
-	@echo " make vivado     Génération du Block Design et export XSA"
-	@echo " make petalinux  Compilation de l’image PetaLinux"
-	@echo " make all        Exécution complète HLS -> Vivado -> PetaLinux"
-	@echo " make clean      Suppression des artefacts matériels"
+	@echo " make hls        Vitis HLS synthesis at 300 MHz (TARGET)"
+	@echo " make hls-400mhz Vitis HLS synthesis at 400 MHz (TARGET)"
+	@echo " make vivado     Generate Block Design and export XSA"
+	@echo " make petalinux  Build the PetaLinux image"
+	@echo " make all        Full run HLS -> Vivado -> PetaLinux"
+	@echo " make clean      Remove hardware build artifacts"
 	@echo "===================================================================="
 
 all: hls vivado petalinux
-	@echo ">>> SUCCESS : pipeline complet exécuté."
+	@echo ">>> Pipeline finished."
 
 hls:
-	@echo ">>> [1/3] Synthèse Vitis HLS 300 MHz..."
+	@echo ">>> [1/3] Vitis HLS synthesis, 300 MHz..."
 	$(VITIS_HLS) -f $(HLS_DIR)/run_hls.tcl
 
 hls-400mhz:
-	@echo ">>> Synthèse Vitis HLS 400 MHz..."
+	@echo ">>> Vitis HLS synthesis, 400 MHz..."
 	$(VITIS_HLS) -f $(HLS_DIR)/run_hls_400mhz.tcl
 
 vivado: hls
-	@echo ">>> [2/3] Génération Vivado du Block Design..."
+	@echo ">>> [2/3] Generating Vivado Block Design..."
 	cd $(VIVADO_DIR) && $(VIVADO) -mode batch -source create_bd.tcl
 
 petalinux: vivado
-	@echo ">>> [3/3] Compilation PetaLinux..."
+	@echo ">>> [3/3] Building PetaLinux..."
 	@if [ ! -d "$(PETALINUX_DIR)" ]; then \
-		echo "Erreur: $(PETALINUX_DIR) est absent; initialisez d’abord un projet PetaLinux."; \
+		echo "Error: $(PETALINUX_DIR) is missing; initialise a PetaLinux project first."; \
 		exit 1; \
 	fi
 	cd $(PETALINUX_DIR) && \
@@ -54,12 +54,12 @@ petalinux: vivado
 		--fsbl images/linux/zynqmp_fsbl.elf \
 		--u-boot images/linux/u-boot.elf \
 		--fpga images/linux/download.bit --force
-	@echo ">>> Artifact final : $(PETALINUX_DIR)/images/linux/BOOT.BIN"
+	@echo ">>> Final artifact: $(PETALINUX_DIR)/images/linux/BOOT.BIN"
 
 clean:
-	@echo ">>> Nettoyage des artefacts matériels..."
+	@echo ">>> Removing hardware build artifacts..."
 	rm -rf $(HLS_DIR)/qldpc_hls_project $(HLS_DIR)/qldpc_hls_project_400mhz
 	rm -rf $(HLS_DIR)/*.log $(HLS_DIR)/vivado* $(HLS_DIR)/.Xil
 	rm -rf $(VIVADO_DIR)/qldpc_vivado_bd $(VIVADO_DIR)/*.jou $(VIVADO_DIR)/*.log
 	rm -rf $(VIVADO_DIR)/*.xsa $(VIVADO_DIR)/.Xil
-	@echo ">>> Nettoyage terminé."
+	@echo ">>> Clean finished."
