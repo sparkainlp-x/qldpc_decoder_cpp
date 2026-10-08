@@ -77,7 +77,7 @@ ADR-001 governs the OES-32 residual family (normative: [oes32-residual@b77b612](
 
 ## Citation
 
-Archived on Zenodo: concept DOI [10.5281/zenodo.22985527](https://doi.org/10.5281/zenodo.22985527) (all versions; resolves to the latest). The v0.1.1 archive is [10.5281/zenodo.22985528](https://doi.org/10.5281/zenodo.22985528).
+Archived on Zenodo: concept DOI [10.5281/zenodo.22985527](https://doi.org/10.5281/zenodo.22985527) (all versions; resolves to the latest). The v0.1.2 archive is [10.5281/zenodo.23241696](https://doi.org/10.5281/zenodo.23241696); v0.1.1 is [10.5281/zenodo.22985528](https://doi.org/10.5281/zenodo.22985528).
 
 Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button. Please also cite the upstream [`ldpc`](https://github.com/quantumgizmos/ldpc) library by Joschka Roffe.
 
